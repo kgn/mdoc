@@ -7,3 +7,5 @@ Comments in header files with three slashes(`///`) are collected up then dumped 
 The command line takes to arguments, the first is the directory to recursivly search for header files.
 
 The second is the readme file to write the markdown to. The second argument is optional, if it's left off the markdown will be written to stdout.
+
+An example of this being used in the wild is on my [BBlock](https://github.com/kgn/BBlock) project.

@@ -35,7 +35,7 @@ def markdownForHeader(root, header, output):
     output.write('###%s\n\n' % header[len(root)+1:])
     for method, comment in zip(methods, comments):
         output.write(comment)
-        output.write('```\n%s\n```\n' % method)
+        output.write('```obj-c\n%s\n```\n' % method)
 
 def writeMarkdown(root, output):
     headers = (os.path.join(r,f) for r,d,l in os.walk(root) for f in l if os.path.splitext(f)[1] == '.h')

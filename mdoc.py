@@ -6,8 +6,8 @@ Copyright 2012 David Keegan.
 
 GitHub markdown documentation generator for Objective-C
 
-Comments in header files with three slashes(///) are collected up then dumped out for each method.
-These comments may also contain markdown.
+Comments in header files with three slashes(///) or block comments that start with two asterisks(/**)
+are collected up then dumped out for each method. These comments may also contain markdown.
 
 The command line takes to arguments, the first is the directory to recursivly search for header files.
 The second is the readme file to write the markdown to. The second argument is optional, if it's left
@@ -20,13 +20,42 @@ def markdownForHeader(root, header, output):
     methods = []
     comments = []
     currentComment = ''
+    inBlockComment = False
     with open(header, 'rU') as source:
         for line in source:
             line = line.strip()
+
+            # comment
             if line.startswith('///'):
                 comment = line.lstrip('/').strip()
                 if not comment: continue
                 currentComment += comment+'\n\n'
+
+            # block comment
+            elif line.startswith('/**'):
+                comment = line.lstrip('/').lstrip('*').strip()
+                if not comment: continue
+                if comment.endswith('*/'):
+                    comment = comment.rstrip('/').rstrip('*')
+                    if not comment: continue
+                    currentComment += comment+'\n\n'
+                else:
+                    currentComment += comment
+                    if currentComment.endswith('.'):
+                        currentComment += ' '
+                    inBlockComment = True
+            elif line.endswith('*/'):
+                comment = line.rstrip('/').rstrip('*')
+                if not comment: continue
+                currentComment += comment+'\n\n'
+                inBlockComment = False
+            elif inBlockComment:
+                if not line: continue
+                currentComment += line
+                if currentComment.endswith('.'):
+                    currentComment += ' '
+
+            # method
             elif line.startswith('-') or line.startswith('+'):
                 methods.append(line)
                 comments.append(currentComment)

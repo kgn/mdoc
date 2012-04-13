@@ -17,8 +17,12 @@ off the markdown will be written to stdout.
 import os, sys
 
 def markdownForHeader(root, header, output):
-    methods = []
-    comments = []
+    currentInterface = ''
+    interfaces = {currentInterface:{
+        'methods': [],
+        'comments': [],
+        'properties': []
+    }}
     currentComment = ''
     inBlockComment = False
     currentMethod = ''
@@ -56,11 +60,24 @@ def markdownForHeader(root, header, output):
                 if currentComment.endswith('.'):
                     currentComment += ' '
 
+            # interface
+            elif line.startswith('@interface'):
+                currentInterface= line
+                interfaces[currentInterface] = {
+                    'methods': [],
+                    'comments': [],
+                    'properties': []
+                }
+
+            # property
+            elif line.startswith('@property'):
+                interfaces[currentInterface]['properties'].append(line)
+
             # method
             elif line.startswith('-') or line.startswith('+'):
                 if line.endswith(';'):
-                    methods.append(line)
-                    comments.append(currentComment)
+                    interfaces[currentInterface]['methods'].append(line)
+                    interfaces[currentInterface]['comments'].append(currentComment)
                     inMethodDelcaration = False
                     currentComment = ''
                     currentMethod = ''
@@ -71,18 +88,27 @@ def markdownForHeader(root, header, output):
                 if line: currentMethod += ' '
                 currentMethod += line
                 if line.endswith(';'):
-                    methods.append(currentMethod)
-                    comments.append(currentComment)
+                    interfaces[currentInterface]['methods'].append(currentMethod)
+                    interfaces[currentInterface]['comments'].append(currentComment)
                     inMethodDelcaration = False
                     currentComment = ''
                     currentMethod = ''
 
 
-    if not methods: return
+    if not interfaces: return
     output.write('##%s\n\n' % header[len(root)+1:])
-    for method, comment in zip(methods, comments):
-        output.write(comment)
-        output.write('```obj-c\n%s\n```\n\n' % method)
+    for key,value in interfaces.iteritems():
+        if key: output.write('###%s\n\n' % key)
+
+        if value['properties']:
+            output.write('```obj-c\n')
+            for prop in value['properties']:
+                output.write('%s\n'%prop)
+            output.write('```\n\n')
+
+        for method, comment in zip(value['methods'], value['comments']):
+            output.write(comment)
+            output.write('```obj-c\n%s\n```\n\n' % method)
 
 def writeMarkdown(root, output):
     headers = (os.path.join(r,f) for r,d,l in os.walk(root) for f in l if os.path.splitext(f)[1] == '.h')

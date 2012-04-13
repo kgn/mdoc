@@ -21,6 +21,8 @@ def markdownForHeader(root, header, output):
     comments = []
     currentComment = ''
     inBlockComment = False
+    currentMethod = ''
+    inMethodDelcaration = False
     with open(header, 'rU') as source:
         for line in source:
             line = line.strip()
@@ -56,9 +58,25 @@ def markdownForHeader(root, header, output):
 
             # method
             elif line.startswith('-') or line.startswith('+'):
-                methods.append(line)
-                comments.append(currentComment)
-                currentComment = ''
+                if line.endswith(';'):
+                    methods.append(line)
+                    comments.append(currentComment)
+                    inMethodDelcaration = False
+                    currentComment = ''
+                    currentMethod = ''
+                else:
+                    currentMethod = line
+                    inMethodDelcaration = True
+            elif inMethodDelcaration:
+                if line: currentMethod += ' '
+                currentMethod += line
+                if line.endswith(';'):
+                    methods.append(currentMethod)
+                    comments.append(currentComment)
+                    inMethodDelcaration = False
+                    currentComment = ''
+                    currentMethod = ''
+
 
     if not methods: return
     output.write('##%s\n\n' % header[len(root)+1:])

@@ -40,7 +40,7 @@ def markdownForHeader(root, header, output):
                     if not comment: continue
                     currentComment += comment+'\n\n'
                 else:
-                    currentComment += comment
+                    currentComment += comment+'\n'
                     if currentComment.endswith('.'):
                         currentComment += ' '
                     inBlockComment = True
@@ -50,8 +50,7 @@ def markdownForHeader(root, header, output):
                 currentComment += comment+'\n\n'
                 inBlockComment = False
             elif inBlockComment:
-                if not line: continue
-                currentComment += line
+                currentComment += line+'\n'
                 if currentComment.endswith('.'):
                     currentComment += ' '
 
@@ -60,11 +59,12 @@ def markdownForHeader(root, header, output):
                 methods.append(line)
                 comments.append(currentComment)
                 currentComment = ''
+
     if not methods: return
-    output.write('###%s\n\n' % header[len(root)+1:])
+    output.write('##%s\n\n' % header[len(root)+1:])
     for method, comment in zip(methods, comments):
         output.write(comment)
-        output.write('```obj-c\n%s\n```\n' % method)
+        output.write('```obj-c\n%s\n```\n\n' % method)
 
 def writeMarkdown(root, output):
     headers = (os.path.join(r,f) for r,d,l in os.walk(root) for f in l if os.path.splitext(f)[1] == '.h')

@@ -96,7 +96,7 @@ def markdownForHeader(root, header, output):
 
 
     if not interfaces: return
-    output.write('##%s\n\n' % header[len(root)+1:])
+    output.write('##%s\n\n' % header[len(root):])
     for key,value in interfaces.iteritems():
         if key: output.write('###%s\n\n' % key)
 
